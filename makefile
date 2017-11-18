@@ -1,8 +1,8 @@
 COMPILER = gcc
 CFLAGS = -Wall -o
 all: tftpserv
-tftpserv: tftpserver.o
-tftpserver.o:
-	$(COMPILER) tftpserver.c $(CFLAGS) tftpserver
+tftpserv: server.o
+server.o:
+	$(COMPILER) server.c $(CFLAGS) server
 clean:
 	rm -rf *.o tftpserv tftpserv.o
