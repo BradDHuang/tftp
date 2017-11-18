@@ -46,12 +46,10 @@ int main(int argc, char *argv[]) {
   // loop through all the results and make a socket
   for(p = server_info; p != NULL; p = p->ai_next) {
     if ((sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1) {
-    //perror("tftpserver1: socket");
     continue;
     }
     if (bind(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
       close(sockfd);
-      //perror("tftpserver1: bind");
       continue;
     }
     break;
@@ -65,7 +63,6 @@ int main(int argc, char *argv[]) {
       printf("The server is waiting for the client request\n");
       addr_len = sizeof client_addr;
       if ((numbytes = recvfrom(sockfd, received_buffer, BUFFER_LENGTH-1 , 0, (struct sockaddr *)&client_addr, &addr_len)) == -1) {
-      //perror("tftpserver: fail to receive packets from client-1");
           exit(2);
       }
       if (numbytes > 4){
@@ -80,7 +77,7 @@ int main(int argc, char *argv[]) {
           if ( fp == NULL ) {
         // File not found Error
               if (errno == ENOENT) {
-                  printf("Error!! File not found\n");
+                  printf("File not found\n");
           // send an error message
                   opcode_FileError = htons(5);
                   errorcode_FileError = htons(1);
@@ -89,7 +86,6 @@ int main(int argc, char *argv[]) {
                   memcpy(error_buffer+(2*sizeof(uint16_t)), (const char *)errmsg, sizeof(errmsg));
                   memcpy(error_buffer+(2*sizeof(uint16_t))+sizeof(errmsg), (const char *)&split, sizeof(uint8_t));
                   if ((numbytes = sendto(sockfd, error_buffer, 19, 0, (struct sockaddr *)&client_addr, p->ai_addrlen)) == -1) {
-            //perror("tftpserver: fail to send ERROR packet");
                   } else {
                       printf("The server has sent FILE NOT FOUND message\n");
                   }
@@ -108,24 +104,20 @@ int main(int argc, char *argv[]) {
                   printf("New port number for the client is: %s\n", z);
           // create a new UDP socket with a new port number and bind it to the server
                   if ((rv = getaddrinfo((const char *)argv[1], (const char *)z , &addr_index, &server_info)) != 0) {
-                      //fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
                       return 1;
                   }
 
                   for(p = server_info; p != NULL; p = p->ai_next) {
                       if ((clientfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1) {
-                          //perror("tftpserver1: socket");
                           continue;
                       }
                       if (bind(clientfd, p->ai_addr, p->ai_addrlen) == -1) {
                           close(clientfd);
-                          //perror("tftpserver1: bind");
                           continue;
                       }
                       break;
                   }
                   if (p == NULL) {
-                      //fprintf(stderr, "tftpserver1: failed to bind socket\n");
                       return 2;
                   }
                   // read the file and send data
@@ -173,12 +165,11 @@ int main(int argc, char *argv[]) {
                           select(clientfd+1, &readfds, NULL, NULL, &tv);  // select to start the timing
                           if (FD_ISSET(clientfd, &readfds)) {  // did not time out
                               if ((numbytes = recvfrom(clientfd, received_buffer, BUFFER_LENGTH-1 , 0, (struct sockaddr *)&client_addr, &addr_len)) == -1) {
-                  //perror("recvfrom");
                                   exit(5);
                               }
                               uint16_t bl;  // block number
                               memcpy(&bl,received_buffer+2, sizeof(uint16_t));
-                              printf("opcode: %d\nblockno: %d\nj: %d\n", *(received_buffer+1), ntohs(bl), j);
+                              printf("opcode: %d\nblockno: %d\nblock number: %d\n", *(received_buffer+1), ntohs(bl), j);
                               //if(feof(fp)){
                               if(*(received_buffer+1)==4){
                               //if( *(received_buffer+1) == 4 && ntohs(bl)==j) {
@@ -194,7 +185,6 @@ int main(int argc, char *argv[]) {
                                   exit(7);
                               }
                               if ((numbytes = sendto(clientfd, sending_buffer, i+4, 0, (struct sockaddr *)&client_addr, p->ai_addrlen)) == -1) {
-                                  //perror("tftpserver1: sendto");
                                   exit(7);
                               }
                           }
